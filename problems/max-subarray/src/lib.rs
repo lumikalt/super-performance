@@ -8,6 +8,7 @@ mod avx2;
 mod chains;
 mod kadane;
 mod naive;
+mod read;
 mod summary;
 
 #[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
@@ -15,6 +16,7 @@ pub use avx2::gather as simd_gather;
 pub use chains::*;
 pub use kadane::*;
 pub use naive::*;
+pub use read::*;
 
 /// One way of solving the problem.
 pub struct Variant {
