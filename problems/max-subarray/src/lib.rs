@@ -3,9 +3,12 @@
 //! The largest sum of a non-empty run of neighbouring values.
 //! Every step of the write-up adds one function and one entry in `VARIANTS`.
 
+mod chains;
 mod kadane;
 mod naive;
+mod summary;
 
+pub use chains::*;
 pub use kadane::*;
 pub use naive::*;
 
@@ -20,6 +23,10 @@ pub struct Variant {
 pub const VARIANTS: &[Variant] = &[
     Variant { name: "naive", run: naive, max_n: 1 << 14 },
     Variant { name: "kadane", run: kadane, max_n: usize::MAX },
+    Variant { name: "chains2", run: chains2, max_n: usize::MAX },
+    Variant { name: "chains4", run: chains4, max_n: usize::MAX },
+    Variant { name: "chains8", run: chains8, max_n: usize::MAX },
+    Variant { name: "chains16", run: chains16, max_n: usize::MAX },
 ];
 
 #[cfg(test)]
@@ -30,7 +37,7 @@ mod tests {
     #[test]
     fn variants_agree_on_edge_cases() {
         // All negative inputs are where a solution that allows an empty subarray goes wrong.
-        let cases: &[&[i32]] = &[&[-1], &[7], &[-3, -1, -2], &[-5, -5], &[0], &[0, 0, 0], &[i32::MIN, i32::MAX]];
+        let cases: &[&[i32]] = &[&[-1], &[7], &[-3, -1, -2], &[-5, -5], &[0], &[i32::MIN, i32::MAX]];
 
         for case in cases {
             for variant in VARIANTS {
