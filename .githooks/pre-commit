@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Refuses the commit unless the Rust code is formatted.
+# Enabled by the dev shell (core.hooksPath), run `cargo fmt` to fix.
+set -u
+
+if ! command -v cargo >/dev/null; then
+    echo "pre-commit: 'cargo' not found, enter the dev shell (direnv or 'nix develop')." >&2
+    exit 1
+fi
+
+cargo fmt --check >/dev/null 2>&1 || {
+    echo "pre-commit: Rust is not formatted, run 'cargo fmt'." >&2
+    exit 1
+}

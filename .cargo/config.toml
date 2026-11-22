@@ -1,0 +1,5 @@
+# One fixed target so the numbers mean the same thing on every machine.
+# x86-64-v3 is AVX2, BMI2 and FMA, which every recent Intel and AMD core has.
+# `native` would make results depend on the machine that built them.
+[build]
+rustflags = ["-C", "target-cpu=x86-64-v3"]
