@@ -23,6 +23,7 @@ pub struct Variant {
 pub const VARIANTS: &[Variant] = &[
     Variant { name: "naive", run: naive, max_n: 1 << 14 },
     Variant { name: "kadane", run: kadane, max_n: usize::MAX },
+    Variant { name: "kadane_two_best", run: kadane_two_best, max_n: usize::MAX },
     Variant { name: "chains2", run: chains2, max_n: usize::MAX },
     Variant { name: "chains4", run: chains4, max_n: usize::MAX },
     Variant { name: "chains8", run: chains8, max_n: usize::MAX },

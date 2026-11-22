@@ -3,6 +3,7 @@
 #
 # usage: perf.sh <values> <repetitions> <variant>...
 #   CORE=0 sets the core to pin to, a fast one on a hybrid chip.
+#   RANGE="-3000 1000" sets the lowest and highest value of the random input.
 #
 # Needs `perf`, for example `nix shell nixpkgs#linuxPackages_latest.perf`.
 # Only user-space events are counted, so perf_event_paranoid 2 is enough.
@@ -29,7 +30,7 @@ else
 fi
 
 for variant in "$@"; do
-    out=$(taskset -c "$core" perf stat -x, -e "$events" -- "$root/target/release/examples/run" "$variant" "$values" "$reps" 2>&1 >/dev/null)
+    out=$(taskset -c "$core" perf stat -x, -e "$events" -- "$root/target/release/examples/run" "$variant" "$values" "$reps" ${RANGE:-} 2>&1 >/dev/null)
     cycles=$(echo "$out" | grep cycles | cut -d, -f1)
     instructions=$(echo "$out" | grep instructions | cut -d, -f1)
 
