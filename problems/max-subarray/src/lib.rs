@@ -27,6 +27,10 @@ pub const VARIANTS: &[Variant] = &[
     Variant { name: "chains4", run: chains4, max_n: usize::MAX },
     Variant { name: "chains8", run: chains8, max_n: usize::MAX },
     Variant { name: "chains16", run: chains16, max_n: usize::MAX },
+    Variant { name: "chains2_unchecked", run: chains2_unchecked, max_n: usize::MAX },
+    Variant { name: "chains4_unchecked", run: chains4_unchecked, max_n: usize::MAX },
+    Variant { name: "chains8_unchecked", run: chains8_unchecked, max_n: usize::MAX },
+    Variant { name: "chains16_unchecked", run: chains16_unchecked, max_n: usize::MAX },
 ];
 
 #[cfg(test)]
