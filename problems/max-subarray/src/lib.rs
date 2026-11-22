@@ -47,6 +47,7 @@ pub const VARIANTS: &[Variant] = &[
     #[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
     Variant { name: "simd_gather", run: simd_gather, max_n: usize::MAX },
     Variant { name: "threads_equal", run: threads_equal, max_n: usize::MAX },
+    Variant { name: "threads_queue", run: threads_queue, max_n: usize::MAX },
 ];
 
 #[cfg(test)]
