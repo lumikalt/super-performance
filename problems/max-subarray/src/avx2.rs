@@ -13,6 +13,11 @@ const STEPS: usize = 4096;
 /// A block is `LANES` stretches of `STEPS` values, the stretches of a block are neighbours.
 /// Each step gathers one value from each stretch.
 pub fn gather(input: &[i32]) -> i64 {
+    summary(input).best
+}
+
+/// The summary of the whole input, so that results of several stretches can be joined.
+pub fn summary(input: &[i32]) -> Summary {
     assert!(!input.is_empty(), "the subarray has to be non-empty");
 
     let block = LANES * STEPS;
@@ -42,7 +47,7 @@ pub fn gather(input: &[i32]) -> i64 {
         total = Some(total.map_or(rest, |t| t.then(rest)));
     }
 
-    total.unwrap().best
+    total.unwrap()
 }
 
 #[target_feature(enable = "avx2")]

@@ -10,6 +10,7 @@ mod kadane;
 mod naive;
 mod read;
 mod summary;
+mod threads;
 
 #[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
 pub use avx2::gather as simd_gather;
@@ -17,6 +18,7 @@ pub use chains::*;
 pub use kadane::*;
 pub use naive::*;
 pub use read::*;
+pub use threads::*;
 
 /// One way of solving the problem.
 pub struct Variant {
@@ -44,6 +46,7 @@ pub const VARIANTS: &[Variant] = &[
     Variant { name: "chains16_unchecked", run: chains16_unchecked, max_n: usize::MAX },
     #[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
     Variant { name: "simd_gather", run: simd_gather, max_n: usize::MAX },
+    Variant { name: "threads_equal", run: threads_equal, max_n: usize::MAX },
 ];
 
 #[cfg(test)]
@@ -99,7 +102,7 @@ mod tests {
         // Around the block size of the SIMD variants, where their loops change shape.
         let block = 8 * 4096;
 
-        for len in [block - 1, block, block + 1, 2 * block, 3 * block + 17, 100_003] {
+        for len in [block - 1, block, block + 1, 2 * block, 3 * block + 17, 100_003, 600_007, 1_000_003] {
             for (seed, (lo, hi)) in
                 [(-1000, 1000), (-1000, -1), (-10_000, 10_000), (-300, 1000)].into_iter().enumerate()
             {
