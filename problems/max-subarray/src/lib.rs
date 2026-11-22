@@ -3,8 +3,10 @@
 //! The largest sum of a non-empty run of neighbouring values.
 //! Every step of the write-up adds one function and one entry in `VARIANTS`.
 
+mod kadane;
 mod naive;
 
+pub use kadane::*;
 pub use naive::*;
 
 /// One way of solving the problem.
@@ -15,7 +17,10 @@ pub struct Variant {
     pub max_n: usize,
 }
 
-pub const VARIANTS: &[Variant] = &[Variant { name: "naive", run: naive, max_n: 1 << 14 }];
+pub const VARIANTS: &[Variant] = &[
+    Variant { name: "naive", run: naive, max_n: 1 << 14 },
+    Variant { name: "kadane", run: kadane, max_n: usize::MAX },
+];
 
 #[cfg(test)]
 mod tests {
