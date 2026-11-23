@@ -132,3 +132,85 @@ pub fn kadane_span_two_best(input: &[i32]) -> Span {
         best_even
     }
 }
+
+/// Takes in the next value, starting a new run when the one so far is below zero.
+/// Written as the compare that `kadane` uses, which the compiler turns into a branch.
+/// The restart is marked as rare, so the branch costs nothing while it is guessed right.
+/// The version in `kadane_span` is tested as `ending_here < 0` and becomes conditional moves instead.
+#[inline(always)]
+pub(crate) fn step(ending_here: &mut i64, start: &mut usize, i: usize, x: i32) {
+    let x = x as i64;
+    let continued = *ending_here + x;
+
+    // The same test as the run being below zero, but written as the compare that kadane uses.
+    if x > continued {
+        std::hint::cold_path();
+        *ending_here = x;
+        *start = i;
+    } else {
+        *ending_here = continued;
+    }
+}
+
+/// `kadane_span` with the restart marked as rare.
+pub fn kadane_span_branch(input: &[i32]) -> Span {
+    assert!(!input.is_empty(), "the subarray has to be non-empty");
+
+    let mut best = Span { start: 0, end: 1, sum: input[0] as i64 };
+    let mut start = 0;
+    let mut ending_here = best.sum;
+
+    for (i, &x) in input.iter().enumerate().skip(1) {
+        step(&mut ending_here, &mut start, i, x);
+
+        if ending_here > best.sum {
+            best = Span { start, end: i + 1, sum: ending_here };
+        }
+    }
+
+    best
+}
+
+/// `kadane_span_two_best` with the restart marked as rare.
+pub fn kadane_span_branch_two_best(input: &[i32]) -> Span {
+    assert!(!input.is_empty(), "the subarray has to be non-empty");
+
+    let first = Span { start: 0, end: 1, sum: input[0] as i64 };
+    let mut best_even = first;
+    let mut best_odd = Span { start: 0, end: 0, sum: i64::MIN };
+    let mut start = 0;
+    let mut ending_here = first.sum;
+    let (pairs, rest) = input[1..].as_chunks::<2>();
+
+    for (p, pair) in pairs.iter().enumerate() {
+        let i = 1 + 2 * p;
+
+        step(&mut ending_here, &mut start, i, pair[0]);
+
+        if ending_here > best_odd.sum {
+            best_odd = Span { start, end: i + 1, sum: ending_here };
+        }
+
+        step(&mut ending_here, &mut start, i + 1, pair[1]);
+
+        if ending_here > best_even.sum {
+            best_even = Span { start, end: i + 2, sum: ending_here };
+        }
+    }
+
+    for (j, &x) in rest.iter().enumerate() {
+        let i = 1 + 2 * pairs.len() + j;
+
+        step(&mut ending_here, &mut start, i, x);
+
+        if ending_here > best_odd.sum {
+            best_odd = Span { start, end: i + 1, sum: ending_here };
+        }
+    }
+
+    if best_odd.sum > best_even.sum || (best_odd.sum == best_even.sum && best_odd.end < best_even.end) {
+        best_odd
+    } else {
+        best_even
+    }
+}

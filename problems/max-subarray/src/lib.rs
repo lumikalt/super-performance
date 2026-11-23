@@ -75,6 +75,11 @@ pub const SPAN_VARIANTS: &[SpanVariant] = &[
     SpanVariant { name: "locate_two_best", run: locate_two_best, max_n: usize::MAX },
     #[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
     SpanVariant { name: "locate_simd", run: locate_simd, max_n: usize::MAX },
+    SpanVariant { name: "kadane_span_branch", run: kadane_span_branch, max_n: usize::MAX },
+    SpanVariant { name: "kadane_span_branch_two_best", run: kadane_span_branch_two_best, max_n: usize::MAX },
+    SpanVariant { name: "locate_branch_two_best", run: locate_branch_two_best, max_n: usize::MAX },
+    #[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
+    SpanVariant { name: "locate_branch_simd", run: locate_branch_simd, max_n: usize::MAX },
 ];
 
 #[cfg(test)]
