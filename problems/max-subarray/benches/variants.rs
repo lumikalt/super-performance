@@ -1,6 +1,6 @@
 use criterion::{BenchmarkId, Criterion, Throughput, black_box, criterion_group, criterion_main};
 use harness::{data::random_i32s, environment};
-use max_subarray::{VARIANTS, read_sum};
+use max_subarray::{SPAN_VARIANTS, VARIANTS, read_sum};
 use std::time::Duration;
 
 fn variants(c: &mut Criterion) {
@@ -25,6 +25,16 @@ fn variants(c: &mut Criterion) {
         });
 
         for variant in VARIANTS {
+            if n > variant.max_n {
+                continue;
+            }
+
+            group.bench_with_input(BenchmarkId::new(variant.name, n), &input, |b, input| {
+                b.iter(|| (variant.run)(black_box(input)))
+            });
+        }
+
+        for variant in SPAN_VARIANTS {
             if n > variant.max_n {
                 continue;
             }

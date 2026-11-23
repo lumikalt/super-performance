@@ -7,7 +7,7 @@
 //! The data matters for some variants, a mostly negative range makes kadane's branch hard to predict.
 
 use harness::data::random_i32s;
-use max_subarray::VARIANTS;
+use max_subarray::{SPAN_VARIANTS, VARIANTS};
 use std::hint::black_box;
 
 fn main() {
@@ -23,16 +23,28 @@ fn main() {
     let reps: usize = args[3].parse().expect("repetitions has to be a number");
     let lowest: i32 = args.get(4).map_or(-1000, |s| s.parse().expect("lowest has to be a number"));
     let highest: i32 = args.get(5).map_or(1000, |s| s.parse().expect("highest has to be a number"));
-    let variant = VARIANTS.iter().find(|v| v.name == name).expect("unknown variant");
     let input = random_i32s(n, 1, lowest, highest);
 
+    // The variants that also say where the run is, folded into one number to check.
+    let run: Box<dyn Fn(&[i32]) -> i64> = if let Some(variant) = VARIANTS.iter().find(|v| v.name == name) {
+        Box::new(variant.run)
+    } else {
+        let variant = SPAN_VARIANTS.iter().find(|v| v.name == name).expect("unknown variant");
+
+        Box::new(move |input| {
+            let span = (variant.run)(input);
+
+            span.sum ^ ((span.start as i64) << 20) ^ ((span.end as i64) << 40)
+        })
+    };
+
     // One run first, so page faults and cold caches do not count.
-    black_box((variant.run)(black_box(&input)));
+    black_box(run(black_box(&input)));
 
     let mut sink = 0i64;
 
     for _ in 0..reps {
-        sink ^= (variant.run)(black_box(&input));
+        sink ^= run(black_box(&input));
     }
 
     println!("{name}: {n} values, {reps} runs, checksum {sink}");

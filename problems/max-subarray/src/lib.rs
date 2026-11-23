@@ -7,6 +7,7 @@
 mod avx2;
 mod chains;
 mod kadane;
+mod locate;
 mod naive;
 mod read;
 mod summary;
@@ -16,6 +17,7 @@ mod threads;
 pub use avx2::gather as simd_gather;
 pub use chains::*;
 pub use kadane::*;
+pub use locate::*;
 pub use naive::*;
 pub use read::*;
 pub use threads::*;
@@ -25,6 +27,22 @@ pub struct Variant {
     pub name: &'static str,
     pub run: fn(&[i32]) -> i64,
     /// The largest input this variant is benchmarked on, for the slow ones.
+    pub max_n: usize,
+}
+
+/// A run of neighbouring values, `start..end` is its range in the input.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Span {
+    pub start: usize,
+    pub end: usize,
+    pub sum: i64,
+}
+
+/// One way of finding where the best run is, not only how large it is.
+/// Several runs can have the best sum, the answer is the one that ends first and of those the one that starts first.
+pub struct SpanVariant {
+    pub name: &'static str,
+    pub run: fn(&[i32]) -> Span,
     pub max_n: usize,
 }
 
@@ -48,6 +66,15 @@ pub const VARIANTS: &[Variant] = &[
     Variant { name: "simd_gather", run: simd_gather, max_n: usize::MAX },
     Variant { name: "threads_equal", run: threads_equal, max_n: usize::MAX },
     Variant { name: "threads_queue", run: threads_queue, max_n: usize::MAX },
+];
+
+pub const SPAN_VARIANTS: &[SpanVariant] = &[
+    SpanVariant { name: "naive_span", run: naive_span, max_n: 1 << 14 },
+    SpanVariant { name: "kadane_span", run: kadane_span, max_n: usize::MAX },
+    SpanVariant { name: "kadane_span_two_best", run: kadane_span_two_best, max_n: usize::MAX },
+    SpanVariant { name: "locate_two_best", run: locate_two_best, max_n: usize::MAX },
+    #[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
+    SpanVariant { name: "locate_simd", run: locate_simd, max_n: usize::MAX },
 ];
 
 #[cfg(test)]
@@ -120,6 +147,55 @@ mod tests {
                         "{} differs on length {len}, range {lo}..={hi}",
                         variant.name
                     );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn span_variants_agree() {
+        let cases: &[&[i32]] = &[&[-1], &[7], &[0], &[0, 0, 0], &[-3, -1, -2], &[0, 3, -3, 3], &[3, -3, 3, -3, 3]];
+
+        for case in cases {
+            for variant in SPAN_VARIANTS {
+                assert_eq!((variant.run)(case), naive_span(case), "{} differs on {case:?}", variant.name);
+            }
+        }
+
+        // Narrow ranges make many runs tie for the best sum.
+        for (lo, hi) in [(-1000, 1000), (-1000, -1), (1, 1000), (-3, 3), (-1, 1)] {
+            for seed in 0..30 {
+                for len in [1, 2, 3, 7, 8, 9, 63, 64, 65, 1000] {
+                    let input = random_i32s(len, seed, lo, hi);
+
+                    for variant in SPAN_VARIANTS {
+                        assert_eq!(
+                            (variant.run)(&input),
+                            naive_span(&input),
+                            "{} differs on seed {seed}, length {len}, range {lo}..={hi}",
+                            variant.name
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn span_variants_agree_on_large_inputs() {
+        for len in [32_768, 32_769, 100_003, 1_000_003] {
+            for (seed, (lo, hi)) in [(-1000, 1000), (-1000, -1), (-3, 3)].into_iter().enumerate() {
+                let input = random_i32s(len, seed as u64, lo, hi);
+                let expected = kadane_span(&input);
+
+                assert_eq!(expected.sum, kadane(&input));
+
+                for variant in SPAN_VARIANTS {
+                    if variant.max_n < len {
+                        continue;
+                    }
+
+                    assert_eq!((variant.run)(&input), expected, "{} differs on length {len}", variant.name);
                 }
             }
         }
