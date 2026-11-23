@@ -1,0 +1,13 @@
+[package]
+name = "max-subarray-uiua"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+# gpuiua is not published, this expects a checkout at ~/code/rust/gpuiua next to the other projects.
+gpuiua = { path = "../../../../rust/gpuiua" }
+uiua = { version = "0.19.1", default-features = false }
+
+# Its own workspace, so the main one still builds without a GPU library and the Uiua crates.
+[workspace]
